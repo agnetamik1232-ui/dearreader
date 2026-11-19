@@ -1,5 +1,5 @@
 // Dear Reader — keeps the app working offline, and quietly picks up updates in the background.
-const VERSION = "dearreader-1.0.1";
+const VERSION = "dearreader-1.0.2";
 const FONTS = "dearreader-fonts";
 const FILES = [
   "./", "index.html", "manifest.webmanifest", "css/base.css", "css/looks.css", "css/book.css",

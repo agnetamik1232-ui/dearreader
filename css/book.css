@@ -47,7 +47,7 @@
 .spine{background:var(--c);display:flex;align-items:center;justify-content:center;flex:none;box-shadow:inset -3px 0 0 rgba(0,0,0,.15),inset 3px 0 0 rgba(255,255,255,.12);position:relative}
 .spine:before,.spine:after{content:"";position:absolute;left:0;right:0;height:3px;background:rgba(230,211,168,.6)}
 .spine:before{top:10%}.spine:after{bottom:10%}
-.spine span{writing-mode:vertical-rl;transform:rotate(180deg);font-family:Fraunces,serif;font-weight:800;font-size:11px;color:#F6F1E7;white-space:nowrap;overflow:hidden;max-height:82%}
+.spine span{writing-mode:vertical-rl;transform:rotate(180deg);font-family:Fraunces,serif;font-weight:800;font-size:11px;color:#F6F1E7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-height:82%}
 .empty-shelf{align-items:center;justify-content:center;color:#F6F1E7;font-weight:700}
 /* series */
 .slots{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.8rem}

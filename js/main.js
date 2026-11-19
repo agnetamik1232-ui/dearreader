@@ -12,16 +12,31 @@ app.demo = params.has("demo");
 app.photo = app.demo && params.has("photo");
 app.view = "home";
 
-function renderApp() { const y = scrollY; document.getElementById("app").innerHTML = shell(); if (y) scrollTo(0, y); }
+function renderApp() { const y = scrollY; document.getElementById("app").innerHTML = shell(); fitShelves(); if (y) scrollTo(0, y); }
+
+// Shelves: put as many spines on each shelf as fit the screen, then start a new shelf.
+function fitShelves() {
+  const cs = document.querySelector(".case[data-fit]");
+  const first = cs && cs.querySelector(".shelf"), spines = cs ? [...cs.querySelectorAll(".spine")] : [];
+  if (!spines.length) return;
+  const st = getComputedStyle(first), gap = parseFloat(st.columnGap) || 0;
+  const room = first.clientWidth - parseFloat(st.paddingLeft) - parseFloat(st.paddingRight);
+  const rows = []; let row = [], used = 0;
+  for (const s of spines) { const w = s.offsetWidth + gap; if (row.length && used + s.offsetWidth > room) { rows.push(row); row = []; used = 0; } row.push(s); used += w; }
+  rows.push(row);
+  cs.replaceChildren(...rows.map(r => { const d = document.createElement("div"); d.className = "shelf"; d.append(...r); return d; }));
+}
+let fitTimer; addEventListener("resize", () => { clearTimeout(fitTimer); fitTimer = setTimeout(fitShelves, 150); });
 app.start = () => { app.renderFn = renderApp; applyLook(); renderApp(); if (app.demo) demoExtras(); };
 
 // Demo only: open a given screen straight away (for listing photos and videos).
-//   ?demo&photo  &look=reading_nook  &view=library  &open=scan | add | book:<title> | finish:<title> | year | import
+//   ?demo&photo  &look=reading_nook  &view=library  &shelf=all  &open=scan | add | book:<title> | finish:<title> | year | import
 function demoExtras() {
   const look = params.get("look"), view = params.get("view"), open = params.get("open") || "";
   if (look) { app.S.profile.look = look; applyLook(); }
+  if (params.get("shelf")) app.shelfShow = params.get("shelf");
   if (view) app.view = view;
-  if (look || view) render();
+  if (look || view || params.get("shelf")) render();
   const fire = (act, data = {}) => { const el = document.createElement("button"); Object.assign(el.dataset, data); actions[act]?.(el); };
   const byTitle = t => app.S.books.find(b => b.title.toLowerCase() === t.toLowerCase());
   if (open === "scan") { fire("add-book", { mode: "scan" }); setTimeout(() => fire("demo-scan"), 50); }

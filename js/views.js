@@ -122,11 +122,9 @@ function shelves() {
   const list = B.shelfBooks(S(), show);
   const spine = b => { const p = Number(b.pages) || 300; const w = Math.max(18, Math.min(44, Math.round(14 + p / 28))); const h = p > 450 ? 100 : p > 250 ? 90 : 80;
     return `<button type="button" class="spine" ${book(b)} style="--c:${genreColor(b.genre)};width:${w}px;height:${h}%" title="${esc(b.title)} · ${esc(b.author)}"><span>${esc(b.title.length > 26 ? b.title.slice(0, 25) + "…" : b.title)}</span></button>`; };
-  const per = 34, rows = [];
-  for (let i = 0; i < list.length; i += per) rows.push(list.slice(i, i + per));
   return `<h1 class="page-title fr">Shelves</h1><p class="page-sub">Your books as a bookcase, sorted like a rainbow by genre. Tap a spine to open it.</p>
   <div class="seg" style="margin-bottom:1rem">${[["owned", "Books I own"], ["read", "Books I've read"], ["all", "Everything"]].map(([k, l]) => `<button type="button" data-act="shelf-show" data-v="${k}" aria-pressed="${show === k}">${l}</button>`).join("")}</div>
-  <div class="case">${rows.map(r => `<div class="shelf">${r.map(spine).join("")}</div>`).join("") || `<div class="shelf empty-shelf"><span>Your shelf is waiting for its first book.</span></div>`}</div>
+  <div class="case" data-fit>${list.length ? `<div class="shelf">${list.map(spine).join("")}</div>` : `<div class="shelf empty-shelf"><span>Your shelf is waiting for its first book.</span></div>`}</div>
   <p class="small muted" style="margin-top:.8rem">${list.length} ${list.length === 1 ? "book" : "books"} &middot; thicker spines are longer books.</p>`;
 }
 
