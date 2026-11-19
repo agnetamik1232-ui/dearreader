@@ -1,0 +1,15 @@
+{
+  "name": "Dear Reader",
+  "short_name": "Dear Reader",
+  "description": "A cosy book tracker: scan to check if you own a book, track your reading, series, spice and tropes.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F6F1E7",
+  "theme_color": "#FBF8F1",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
