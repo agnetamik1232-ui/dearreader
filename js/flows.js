@@ -1,6 +1,6 @@
 // Dear Reader — everything that opens in a sheet, plus unlock, setup and the shared wishlist page.
 import * as B from "./books.js";
-import { app, actions, forms, live, esc, money, fmt, fd, fdShort, parseMoney, commit, render, toast, openSheet, updateSheet, closeSheet, sheetHead, shareOrDownload, pickFile, isIOS, isStandalone } from "./core.js";
+import { app, actions, forms, live, esc, money, fmt, fmtR, fd, fdShort, parseMoney, commit, render, toast, openSheet, updateSheet, closeSheet, sheetHead, shareOrDownload, pickFile, isIOS, isStandalone } from "./core.js";
 import { uid, blankState, newBook, normalise, STATUSES, FORMATS, SOURCES, TROPES, MOODS, CURRENCIES } from "./model.js";
 import { LOOKS, GENRES } from "./looks.js";
 import { cover, stars, chilli, ratingText, progressText, STATUS_LABEL, genreColor } from "./ui.js";
@@ -362,7 +362,7 @@ actions["year-card"] = async el => {
     const a = document.createElement("a"); a.href = url; a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
   };
 };
-async function yearCard(Y) {
+export async function yearCard(Y) {
   const st = B.yearStats(S(), Y, app.today), q = B.quilt(S(), Y);
   const css = getComputedStyle(document.documentElement), v = n => css.getPropertyValue("--" + n).trim();
   const dark = LOOKS[S().profile.look]?.dark;
@@ -379,7 +379,7 @@ async function yearCard(Y) {
   x.fillText(`${st.books} ${st.books === 1 ? "book," : "books,"}`, P, 230);
   x.fillStyle = gold; x.font = "italic 800 108px Fraunces";
   x.fillText("one lovely year.", P, 350);
-  const cells = [[st.pages.toLocaleString("en-GB"), "pages read"], [st.topGenre || "–", "top genre"], [st.avgRating != null ? String(st.avgRating) : "–", "average rating"], [st.saved ? fmt(st.saved).replace(/\.00$/, "") : "–", "saved by borrowing"], [String(st.fiveStars), "five-star reads"], [st.busiest != null ? new Date(Date.UTC(Y, st.busiest, 1)).toLocaleString("en-GB", { month: "long", timeZone: "UTC" }) : "–", "busiest month"]];
+  const cells = [[st.pages.toLocaleString("en-GB"), "pages read"], [st.topGenre || "–", "top genre"], [st.avgRating != null ? String(st.avgRating) : "–", "average rating"], [st.saved ? fmtR(st.saved) : "–", "saved by borrowing"], [String(st.fiveStars), "five-star reads"], [st.busiest != null ? new Date(Date.UTC(Y, st.busiest, 1)).toLocaleString("en-GB", { month: "long", timeZone: "UTC" }) : "–", "busiest month"]];
   cells.forEach(([a, b], i) => {
     const cx = P + (i % 2) * 460, cy = 540 + Math.floor(i / 2) * 170;
     x.fillStyle = gold; x.globalAlpha = .45; x.fillRect(cx, cy, 400, 2); x.globalAlpha = 1;
@@ -406,8 +406,23 @@ function wrap(x, text, X, Y, w, lh, maxLines) {
 }
 
 // ============ Import, backup, export, calendar ============
+// In the demo there's no real export to pick, so a small sample Goodreads file shows how importing works.
+const SAMPLE_GOODREADS = `Book Id,Title,Author,Author l-f,Additional Authors,ISBN,ISBN13,My Rating,Average Rating,Publisher,Binding,Number of Pages,Year Published,Original Publication Year,Date Read,Date Added,Bookshelves,Bookshelves with positions,Exclusive Shelf,My Review,Spoiler,Private Notes,Read Count,Owned Copies
+1,Jane Eyre,Charlotte Brontë,"Brontë, Charlotte",,,,5,4.1,,Paperback,532,,1847,2025/02/10,2025/01/02,,,read,,,,1,1
+2,Emma,Jane Austen,"Austen, Jane",,,,4,4.0,,Paperback,474,,1815,2025/03/01,2025/02/01,,,read,,,,1,1
+3,"Rilla of Ingleside (Anne of Green Gables, #8)",L.M. Montgomery,"Montgomery, L.M.",,,,0,4.2,,Paperback,277,,1921,,2025/04/01,,,to-read,,,,0,0
+4,"Rainbow Valley (Anne of Green Gables, #7)",L.M. Montgomery,"Montgomery, L.M.",,,,4,4.1,,Paperback,240,,1919,2025/05/12,2025/05/01,,,read,,,,1,1
+5,The Count of Monte Cristo,Alexandre Dumas,"Dumas, Alexandre",,,,0,4.3,,Audible Audio,,,1844,,2025/06/01,,,currently-reading,,,,0,0
+6,Kidnapped,Robert Louis Stevenson,"Stevenson, R.L.",,,,4,3.8,,Paperback,288,,1886,2025/06/20,2025/06/01,,,read,,,,1,1
+7,Cranford,Elizabeth Gaskell,"Gaskell, Elizabeth",,,,4,3.9,,Paperback,224,,1853,2025/07/15,2025/07/01,,,read,,,,1,0
+8,The Wind in the Willows,Kenneth Grahame,"Grahame, Kenneth",,,,5,4.0,,Hardcover,256,,1908,2025/08/02,2025/07/20,,,read,,,,1,1
+9,"The Return of Sherlock Holmes (Sherlock Holmes, #6)",Arthur Conan Doyle,"Doyle, Arthur Conan",,,,0,4.3,,Paperback,403,,1905,,2025/08/10,,,to-read,,,,0,1
+10,Silas Marner,George Eliot,"Eliot, George",,,,3,3.6,,Paperback,240,,1861,2025/09/01,2025/08/20,,,read,,,,1,0
+11,The Mill on the Floss,George Eliot,"Eliot, George",,,,0,3.8,,Paperback,560,,1860,,2025/09/10,,,to-read,,,,0,0
+12,Dracula,Bram Stoker,"Stoker, Bram",,,,4,4.0,,Paperback,418,,1897,,2025/10/01,,,to-read,,,,0,1
+`;
 actions["import"] = async () => {
-  const f = await pickFile(".csv,text/csv,text/plain");
+  const f = app.demo ? { name: "goodreads_library_export.csv", text: SAMPLE_GOODREADS } : await pickFile(".csv,text/csv,text/plain");
   if (!f) return;
   let res; try { res = readFile(f.text, S().profile.locale); } catch { return toast("I couldn't read that file."); }
   const { fresh, dupes } = importPlan(S(), res.books);
@@ -415,7 +430,7 @@ actions["import"] = async () => {
     <p style="font-weight:700;color:var(--head);margin-bottom:.6rem">From ${esc(SOURCE_NAMES[res.kind])}: ${res.books.length} books found${dupes.length ? `, ${dupes.length} already in your library` : ""}.</p>
     <ul class="small" style="margin:0 0 1rem 1.2rem;color:var(--head);font-weight:600">
       <li>${fresh.filter(b => b.status === "read").length} read, ${fresh.filter(b => b.status === "reading").length} reading, ${fresh.filter(b => b.status === "tbr").length} to read${fresh.filter(b => b.status === "dnf").length ? `, ${fresh.filter(b => b.status === "dnf").length} not finished` : ""}${fresh.filter(b => b.status === "wish").length ? `, ${fresh.filter(b => b.status === "wish").length} wishlist` : ""}</li>
-      <li>${fresh.filter(b => b.series).length} in a series, ${fresh.filter(b => b.isbn).length} with an ISBN (their covers appear by themselves)</li></ul>
+      <li>${fresh.filter(b => b.series).length} in a series${fresh.filter(b => b.isbn).length ? `, ${fresh.filter(b => b.isbn).length} with an ISBN, so their covers appear by themselves` : ""}</li></ul>
     <button type="button" class="btn primary full" data-act="import-go"${fresh.length ? "" : " disabled"}>Import ${fresh.length} ${fresh.length === 1 ? "book" : "books"}</button>`, { label: "Import" });
   actions["import-go"] = () => {
     for (const b of fresh) if (b.isbn && !b.cover) b.cover = `https://covers.openlibrary.org/b/isbn/${B.isbnKey(b.isbn)}-M.jpg?default=false`;

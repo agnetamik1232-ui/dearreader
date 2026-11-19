@@ -2,7 +2,7 @@
 import * as B from "./books.js";
 import { app, actions, forms, live, render, closeSheet, isSheetOpen } from "./core.js";
 import { shell } from "./views.js";
-import { applyLook, renderUnlock, renderSetup, renderSharedWishlist, bookSheet } from "./flows.js";
+import { applyLook, renderUnlock, renderSetup, renderSharedWishlist, bookSheet, yearCard } from "./flows.js";
 import { blankState } from "./model.js";
 import { demoState } from "./demo.js";
 import * as store from "./store.js";
@@ -29,6 +29,8 @@ function demoExtras() {
   if (open.startsWith("book:")) { const b = byTitle(open.slice(5)); if (b) bookSheet(b); }
   if (open.startsWith("finish:")) { const b = byTitle(open.slice(7)); if (b) fire("finish", { id: b.id }); }
   if (open === "year") fire("year-card", { year: String(B.yearOf(app.today)) });
+  if (open === "import") fire("import");
+  if (open === "yearcard") yearCard(B.yearOf(app.today)).then(blob => { document.body.style.margin = "0"; document.body.innerHTML = `<img src="${URL.createObjectURL(blob)}" alt="" style="display:block;width:1080px;height:1920px">`; });
 }
 
 document.addEventListener("click", e => {
