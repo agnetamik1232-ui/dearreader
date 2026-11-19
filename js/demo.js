@@ -79,13 +79,13 @@ export function demoState(today) {
     const started = addDays(fin, -(5 + Math.floor(r() * 12)));
     const src = sources[i % sources.length];
     const price = src === "gift" ? null : Math.round((7.99 + r() * 8) * 100) / 100;
-    const rating = [3.5, 3.75, 4, 4, 4.25, 4.5, 4.5, 5][Math.floor(r() * 8)];
+    const rating = [3.5, 3.75, 4, 4, 4.25, 4.5, 4.5, 4.75][Math.floor(r() * 8)];
     add(pool[i], { status: "read", started, finished: fin, rating, format: i % 7 === 3 ? "ebook" : "paper", source: src, owned: src === "bought" || src === "gift",
       price: src === "bought" || src === "library" || src === "ku" ? price : null, boughtOn: src === "bought" ? started : null, addedAt: addDays(started, -10) });
   }
   // Last year: a handful, for the look-back numbers.
   for (const [i, row] of pool.slice(n).entries()) add(row, { status: "read", started: iso(Y - 1, 3 + i, 2), finished: iso(Y - 1, 3 + i, 20), rating: 4, source: "bought", owned: true, price: 9.99, boughtOn: iso(Y - 1, 3 + i, 1), addedAt: iso(Y - 1, 3 + i, 1) });
-  by["Jane Eyre"].rating = 5; by["Pride and Prejudice"].rating = 5; by["Anne of Green Gables"].rating = 5; by["Little Women"].rating = 4.75;
+  for (const t of ["Jane Eyre", "Pride and Prejudice", "Anne of Green Gables", "Little Women", "The Secret Garden"]) if (by[t]) by[t].rating = 5;
   // Reading now.
   const p = add(CAT.find(c => c[0] === "Persuasion"), { status: "reading", started: addDays(today, -22), progress: 212, source: "library", price: 9.99, dueDate: addDays(today, 13), rating: 4.25 });
   const mc = add(["The Count of Monte Cristo", "Alexandre Dumas", 1276, "Classics"], { status: "reading", format: "audio", minutes: 2760, progress: 480, started: addDays(today, -9), source: "ku", price: 14.99 });
